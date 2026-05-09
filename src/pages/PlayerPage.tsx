@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { set } from "firebase/database";
 import { useGameConfig, usePhase } from "../hooks/useGameState";
 import { useTeams } from "../hooks/useTeams";
 import { TeamSelector } from "../components/TeamSelector";
-import { TapButton } from "../components/TapButton";
+import { ActiveGame } from "../components/ActiveGame";
 import { CountdownNumber } from "../components/CountdownNumber";
 import {
   getPlayerId,
@@ -14,7 +14,6 @@ import {
   setStoredTeamId,
 } from "../lib/player-id";
 import { playerRef } from "../lib/game-state";
-import { ClickTracker } from "../lib/click-tracker";
 
 export function PlayerPage() {
   const config = useGameConfig();
@@ -38,27 +37,6 @@ export function PlayerPage() {
       joinedAt: Date.now(),
     }).catch((e) => setError(`参加登録に失敗しました: ${(e as Error).message}`));
   }, [validTeam, phase, playerId, nickname]);
-
-  const trackerRef = useRef<ClickTracker | null>(null);
-
-  useEffect(() => {
-    if (phase !== "active") {
-      trackerRef.current?.stop();
-      trackerRef.current = null;
-      return;
-    }
-    if (!validTeam) return;
-    const tracker = new ClickTracker({
-      playerId,
-      onAutoClickerDetected: () => setError("自動クリッカーを検知しました。リロードして再参加してください。"),
-      onSendError: (e) => console.warn("send error", e),
-    });
-    tracker.start();
-    trackerRef.current = tracker;
-    return () => {
-      tracker.stop();
-    };
-  }, [phase, validTeam, playerId]);
 
   const handleSelectTeam = (id: string) => {
     setTeamId(id);
@@ -131,21 +109,12 @@ export function PlayerPage() {
       )}
 
       {phase === "active" && validTeam && (
-        <div className="fixed inset-0 flex flex-col p-3 gap-3 bg-black">
-          <div className="text-center">
-            <div
-              className="inline-block rounded-full px-4 py-1 text-sm font-bold"
-              style={{ backgroundColor: validTeam.color, color: "white" }}
-            >
-              {validTeam.name}
-            </div>
-            <div className="text-5xl font-black mt-1 tabular-nums">
-              {Math.ceil(remainingMs / 1000)}
-              <span className="text-2xl text-gray-400">s</span>
-            </div>
-          </div>
-          <TapButton onTap={() => trackerRef.current?.tap()} />
-        </div>
+        <ActiveGame
+          key={`game-${config?.startAt ?? "0"}`}
+          validTeam={validTeam}
+          playerId={playerId}
+          remainingMs={remainingMs}
+        />
       )}
 
       {phase === "active" && !validTeam && (

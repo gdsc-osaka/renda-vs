@@ -36,9 +36,10 @@ export class ClickTracker {
     this.flush();
   }
 
-  tap() {
-    if (!this.active || this.locked) return;
+  tap(): boolean {
+    if (!this.active || this.locked) return false;
     this.bucket++;
+    return true;
   }
 
   isLocked() {
