@@ -28,9 +28,9 @@ export function PlayerPage() {
 
   const validTeam = useMemo(() => teams.find((t) => t.id === teamId), [teams, teamId]);
 
-  // Register/Update player record whenever team changes (only in waiting phase)
+  // Register/Update player record whenever team changes (allow joining mid-game)
   useEffect(() => {
-    if (phase !== "waiting") return;
+    if (phase === "finished" || phase === "revealed") return;
     if (!validTeam) return;
     void set(playerRef(playerId), {
       teamId: validTeam.id,
@@ -71,20 +71,15 @@ export function PlayerPage() {
     setStoredNickname(trimmed);
   };
 
-  // ゲーム中はホストリンクを隠す
-  const showHostLink = phase === "waiting";
-
   return (
     <div className="min-h-dvh flex flex-col">
       {phase === "waiting" && (
         <div className="flex-1 flex flex-col p-5 gap-5 max-w-2xl w-full mx-auto">
           <header className="flex items-center justify-between mt-2">
             <h1 className="text-3xl font-black tracking-tight">連打 vs</h1>
-            {showHostLink && (
-              <Link to="/host" className="text-sm text-gray-400 hover:text-gray-200 underline">
-                ホスト画面
-              </Link>
-            )}
+            <Link to="/host" className="text-sm text-gray-400 hover:text-gray-200 underline">
+              ホスト画面
+            </Link>
           </header>
 
           <section className="rounded-2xl bg-gray-800/60 p-5">
@@ -110,21 +105,28 @@ export function PlayerPage() {
             </div>
           )}
 
-          {config && config.state === "revealed" && (
-            <div className="rounded-xl bg-amber-900/30 border border-amber-700 px-4 py-3 text-amber-200 text-center">
-              現在、ホスト画面で結果発表中です
-            </div>
-          )}
-
           <footer className="mt-auto text-xs text-gray-500 text-center pb-2">
             タップ・クリック以外（スペース／Enter等）はカウントされません
           </footer>
         </div>
       )}
 
-      {phase === "countdown" && (
+      {phase === "countdown" && validTeam && (
         <div className="flex-1 flex items-center justify-center p-5">
           <CountdownNumber remainingMs={countdownRemainingMs} />
+        </div>
+      )}
+
+      {phase === "countdown" && !validTeam && (
+        <div className="flex-1 flex flex-col p-5 gap-4 max-w-2xl w-full mx-auto">
+          <div className="rounded-2xl bg-orange-900/40 border border-orange-600 px-4 py-3 text-center">
+            <div className="text-sm text-orange-200">まもなく開始！</div>
+            <div className="text-4xl font-black tabular-nums text-white mt-1">
+              {Math.ceil(countdownRemainingMs / 1000)}
+            </div>
+          </div>
+          <h2 className="text-sm text-gray-300">急いでチームを選んでください</h2>
+          <TeamSelector teams={teams} selected={teamId} onSelect={handleSelectTeam} />
         </div>
       )}
 
@@ -147,8 +149,15 @@ export function PlayerPage() {
       )}
 
       {phase === "active" && !validTeam && (
-        <div className="fixed inset-0 flex items-center justify-center p-5 text-center text-gray-300">
-          チーム未選択のためゲームに参加できません
+        <div className="flex-1 flex flex-col p-5 gap-4 max-w-2xl w-full mx-auto">
+          <div className="rounded-2xl bg-rose-900/50 border border-rose-600 px-4 py-3 text-center">
+            <div className="text-sm text-rose-200">ゲーム開催中・今からでも参加できます！</div>
+            <div className="text-4xl font-black tabular-nums text-white mt-1">
+              残り {Math.ceil(remainingMs / 1000)}s
+            </div>
+          </div>
+          <h2 className="text-sm text-gray-300">チームを選択するとすぐに連打できます</h2>
+          <TeamSelector teams={teams} selected={teamId} onSelect={handleSelectTeam} />
         </div>
       )}
 
