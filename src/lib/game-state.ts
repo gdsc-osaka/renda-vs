@@ -39,6 +39,7 @@ export async function updateDuration(durationSec: number) {
 }
 
 export async function startGame(countdownMs: number) {
+  await remove(countsRef());
   await update(configRef(), {
     state: "running",
     startAt: serverNow() + countdownMs,

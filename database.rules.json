@@ -12,12 +12,14 @@
         },
         "players": {
           ".read": "auth != null && root.child('games').child($gameId).child('config/hostUid').val() === auth.uid",
+          ".write": "auth != null && root.child('games').child($gameId).child('config/hostUid').val() === auth.uid",
           "$playerId": {
-            ".write": "(!newData.exists()) || (newData.hasChildren(['teamId', 'joinedAt']) && newData.child('teamId').isString() && root.child('games').child($gameId).child('teams').child(newData.child('teamId').val()).exists())"
+            ".write": "(!newData.exists() && auth != null && root.child('games').child($gameId).child('config/hostUid').val() === auth.uid) || (newData.hasChildren(['teamId', 'joinedAt']) && newData.child('teamId').isString() && root.child('games').child($gameId).child('teams').child(newData.child('teamId').val()).exists())"
           }
         },
         "counts": {
           ".read": "auth != null && root.child('games').child($gameId).child('config/hostUid').val() === auth.uid",
+          ".write": "auth != null && root.child('games').child($gameId).child('config/hostUid').val() === auth.uid",
           "$playerId": {
             ".read": true,
             ".write": "(!newData.exists() && auth != null && root.child('games').child($gameId).child('config/hostUid').val() === auth.uid) || (newData.isNumber() && (!data.exists() || newData.val() >= data.val()) && (newData.val() - (data.exists() ? data.val() : 0)) <= 25 && newData.val() <= 5000 && root.child('games').child($gameId).child('config/state').val() === 'running' && now >= root.child('games').child($gameId).child('config/startAt').val() && root.child('games').child($gameId).child('players').child($playerId).exists())"
