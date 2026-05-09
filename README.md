@@ -43,7 +43,7 @@ Firebase Console から取得した値とパスワードハッシュを記入し
 npm run dev
 ```
 
-`http://localhost:5173/renda-vs/` でプレイヤー画面、`http://localhost:5173/renda-vs/#/host` でホスト画面にアクセスできます。
+`http://localhost:5173/` でプレイヤー画面、`http://localhost:5173/#/host` でホスト画面にアクセスできます。
 
 ### 5. (任意) Firebase Emulator を使う
 
@@ -76,9 +76,9 @@ firebase deploy --only database
    - `VITE_HOST_PASSWORD_SALT`
    - `VITE_HOST_PASSWORD_HASH`
 3. `main` ブランチに push すると `.github/workflows/deploy.yml` が起動して自動デプロイ
-4. デプロイ後、`https://<user>.github.io/renda-vs/` でアクセス可能
+4. デプロイ後、カスタムドメイン `https://renda-vs.gdgoc-osaka.jp/` でアクセス可能（`public/CNAME` で設定）
 
-リポジトリ名が `renda-vs` 以外の場合は、`vite.config.ts` の `base` を一致させてください。
+カスタムドメインを使わず `https://<user>.github.io/<repo>/` でホストする場合は、`vite.config.ts` の `base` をリポジトリ名（例: `/renda-vs/`）に変更し、`public/CNAME` を削除してください。
 
 ## 構成
 
